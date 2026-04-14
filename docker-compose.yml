@@ -1,0 +1,94 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sw_team4_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: recommendation
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 1234
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - sw_team4_app_net
+
+  spring-stable:
+    image: jaypark0205/recommendation-api:${STABLE_TAG}
+    container_name: sw_team4_spring_stable
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://sw_team4_mysql:3306/recommendation
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: 1234
+    expose:
+      - "8080"
+    networks:
+      - sw_team4_app_net
+
+  spring-canary:
+    image: jaypark0205/recommendation-api:${CANARY_TAG}
+    container_name: sw_team4_spring_canary
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://sw_team4_mysql:3306/recommendation
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: 1234
+    expose:
+      - "8080"
+    networks:
+      - sw_team4_app_net
+
+  nginx:
+    image: nginx:latest
+    container_name: sw_team4_nginx
+    restart: unless-stopped
+    ports:
+      - "8303:80"
+    volumes:
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - spring-stable
+      - spring-canary
+    networks:
+      - sw_team4_app_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sw_team4_prometheus
+    restart: unless-stopped
+    ports:
+      - "8304:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - sw_team4_app_net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sw_team4_grafana
+    restart: unless-stopped
+    ports:
+      - "8305:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - sw_team4_app_net
+
+volumes:
+  mysql_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  sw_team4_app_net:
+    driver: bridge
