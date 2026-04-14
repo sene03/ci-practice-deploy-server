@@ -22,6 +22,19 @@ echo "✅ stable 정상 확인"
 # ── 1. .env 업데이트 ──────────────────────────────
 sed -i "s/CANARY_TAG=.*/CANARY_TAG=${CANARY_TAG}/" .env
 
+# ── 1.5 기존 이미지 정리 (현재 태그 제외) ───────────
+echo ">>> 기존 이미지 정리..."
+
+CURRENT_CANARY_TAG=${CANARY_TAG}
+CURRENT_STABLE_TAG=$(grep STABLE_TAG .env | cut -d'=' -f2)
+
+docker images "jaypark0205/recommendation-api" --format "{{.Repository}}:{{.Tag}}" | \
+grep -v "$CURRENT_CANARY_TAG" | \
+grep -v "$CURRENT_STABLE_TAG" | \
+xargs -r docker rmi -f
+
+echo "✅ 사용하지 않는 이미지 정리 완료"
+
 # ── 2. canary pull & 재시작 ───────────────────────
 docker compose pull spring-canary
 docker compose up -d --no-deps spring-canary
