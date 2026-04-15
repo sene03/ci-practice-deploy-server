@@ -5,7 +5,7 @@ scrape_configs:
   - job_name: 'spring-servers'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['sw_team4_spring_stable:8080', 'sw_team4_spring_canary:8080']
+      - targets: ['spring-stable:8080', 'spring-canary:8080']
 
   - job_name: 'cadvisor'
     static_configs:
