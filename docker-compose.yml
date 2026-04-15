@@ -20,6 +20,7 @@ services:
 
   spring-stable:
     image: jaypark0205/recommendation-api:${STABLE_TAG}
+    platform: linux/amd64
     container_name: sw_team4_spring_stable
     restart: unless-stopped
     depends_on:
@@ -34,7 +35,11 @@ services:
     networks:
       - sw_team4_app_net
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -42,6 +47,7 @@ services:
 
   spring-canary:
     image: jaypark0205/recommendation-api:${CANARY_TAG}
+    platform: linux/amd64
     container_name: sw_team4_spring_canary
     restart: unless-stopped
     depends_on:
@@ -56,7 +62,11 @@ services:
     networks:
       - sw_team4_app_net
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
